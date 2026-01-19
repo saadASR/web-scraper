@@ -23,29 +23,60 @@ const cache = {
 
 const scraperController = {
 
+    // Main scraping endpoint that handles URL scraping requests
     async scrapeUrl(req, res) {
         try {
             const { url } = req.body;
 
+            // Validate input URL
             if (!url) {
                 return res.status(400).json({ error: 'URL manquante', details: 'Veuillez fournir une URL à scraper' });
             }
 
+            // Check URL format and protocol
             const validation = validateUrl(url);
             if (!validation.isValid) {
                 return res.status(400).json({ error: 'URL invalide', details: validation.error });
             }
 
+            // Check cache first
             const cached = cache.get(url);
             if (cached) {
                 return res.json({ ...cached, fromCache: true });
             }
 
+            // Listen to scraping events emitted by the service
+            scrapingService.on('scrapeStart', (data) => {
+                console.log('Scraping started for:', data.url);
+            });
+
+            scrapingService.on('responseReceived', (data) => {
+                console.log('Response received for:', data.url, 'Status:', data.status);
+            });
+
+            scrapingService.on('htmlParsed', (data) => {
+                console.log('HTML parsed for:', data.url);
+            });
+
+            scrapingService.on('dataSaved', (data) => {
+                console.log('Data saved to file:', data.filename);
+            });
+
+            scrapingService.on('scrapeEnd', (data) => {
+                console.log('Scraping ended for:', data.url);
+            });
+
+            scrapingService.on('scrapeError', (data) => {
+                console.error('Scraping error for:', data.url, 'Error:', data.error);
+            });
+
+            // Perform the scraping using the service
             const result = await scrapingService.scrape(url);
             cache.set(url, result);
             res.json({ ...result, fromCache: false });
 
         } catch (error) {
+            // Handle different types of errors with appropriate HTTP status codes
             const msg = (error && error.message) ? error.message.toLowerCase() : '';
             if (msg.includes('timeout')) {
                 return res.status(408).json({ error: 'Timeout', details: 'La page met trop de temps à répondre' });

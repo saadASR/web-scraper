@@ -1,19 +1,28 @@
-const axios = require('axios');
-const cheerio = require('cheerio');
+const axios = require('axios'); // HTTP client for making requests
+const cheerio = require('cheerio'); // jQuery-like library for HTML parsing
+const fs = require('fs'); // File system module for saving scraped data
+const { EventEmitter } = require('events'); // EventEmitter for handling scraping events
+const { PassThrough } = require('stream'); // Stream for processing response data
 // minimal: use console for logging to keep dependencies small
 
 /**
  * Service de scraping web
  */
-const scrapingService = {
+class ScrapingService extends EventEmitter {
+    constructor() {
+        super();
+    }
+
     /**
      * Scrape une URL et extrait les données
      * @param {string} url - URL à scraper
      * @returns {Object} Données extraites
      */
     async scrape(url) {
+        this.emit('scrapeStart', { url });
+
         try {
-            // Configuration axios
+            // Configuration axios with stream
             const response = await axios.get(url, {
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -26,7 +35,8 @@ const scrapingService = {
                 timeout: parseInt(process.env.SCRAPE_TIMEOUT) || 10000,
                 maxRedirects: 5,
                 maxContentLength: 10 * 1024 * 1024, // 10MB max
-                validateStatus: (status) => status < 500 // Accepter les codes < 500
+                validateStatus: (status) => status < 500, // Accepter les codes < 500
+                responseType: 'stream' // Use stream
             });
 
             // Vérifier le statut
@@ -40,34 +50,64 @@ const scrapingService = {
                 throw new Error(`Erreur HTTP ${response.status}`);
             }
 
-            // Parser le HTML
-            const $ = cheerio.load(response.data);
+            this.emit('responseReceived', { url, status: response.status });
 
-            // Extraire les données
-            const data = {
-                url,
-                scrapedAt: new Date().toISOString(),
-                title: this.extractTitle($),
-                meta: this.extractMeta($),
-                headings: this.extractHeadings($),
-                paragraphs: this.extractParagraphs($),
-                links: this.extractLinks($, url),
-                images: this.extractImages($, url),
-                stats: {}
-            };
+            // Collect data from stream
+            const stream = response.data;
+            const chunks = [];
+            const passThrough = new PassThrough();
 
-            // Calculer les statistiques
-            data.stats = {
-                totalHeadings: data.headings.length,
-                totalParagraphs: data.paragraphs.length,
-                totalLinks: data.links.length,
-                totalImages: data.images.length,
-                wordCount: this.countWords(data.paragraphs)
-            };
+            stream.pipe(passThrough);
 
-            return data;
+            return new Promise((resolve, reject) => {
+                passThrough.on('data', (chunk) => {
+                    chunks.push(chunk);
+                });
+
+                passThrough.on('end', () => {
+                    const html = Buffer.concat(chunks).toString('utf8');
+
+                    // Parser le HTML
+                    const $ = cheerio.load(html);
+
+                    this.emit('htmlParsed', { url });
+
+                    // Extraire les données
+                    const data = {
+                        url,
+                        scrapedAt: new Date().toISOString(),
+                        title: this.extractTitle($),
+                        meta: this.extractMeta($),
+                        headings: this.extractHeadings($),
+                        paragraphs: this.extractParagraphs($),
+                        links: this.extractLinks($, url),
+                        images: this.extractImages($, url),
+                        stats: {}
+                    };
+
+                    // Calculer les statistiques
+                    data.stats = {
+                        totalHeadings: data.headings.length,
+                        totalParagraphs: data.paragraphs.length,
+                        totalLinks: data.links.length,
+                        totalImages: data.images.length,
+                        wordCount: this.countWords(data.paragraphs)
+                    };
+
+                    // Save to file
+                    const filename = `scraped_${Date.now()}_${url.replace(/[^a-zA-Z0-9]/g, '_')}.json`;
+                    fs.writeFileSync(filename, JSON.stringify(data, null, 2));
+                    this.emit('dataSaved', { url, filename });
+
+                    this.emit('scrapeEnd', { url, data });
+                    resolve(data);
+                });
+
+                passThrough.on('error', reject);
+            });
 
         } catch (error) {
+            this.emit('scrapeError', { url, error: error.message });
             if (error.code === 'ECONNABORTED') {
                 throw new Error('timeout: Délai d\'attente dépassé');
             }
@@ -77,20 +117,20 @@ const scrapingService = {
             if (error.code === 'ECONNREFUSED') {
                 throw new Error('Connexion refusée par le serveur');
             }
-            
+
             console.error('Erreur de scraping:', error && error.message ? error.message : error);
             throw error;
         }
-    },
+    }
 
     /**
      * Extraire le titre de la page
      */
     extractTitle($) {
-        return $('title').text().trim() || 
-               $('h1').first().text().trim() || 
-               'Sans titre';
-    },
+        return $('title').text().trim() ||
+            $('h1').first().text().trim() ||
+            'Sans titre';
+    }
 
     /**
      * Extraire les métadonnées
@@ -104,7 +144,7 @@ const scrapingService = {
             ogDescription: $('meta[property="og:description"]').attr('content') || '',
             ogImage: $('meta[property="og:image"]').attr('content') || ''
         };
-    },
+    }
 
     /**
      * Extraire les titres (h1-h6)
@@ -123,7 +163,7 @@ const scrapingService = {
             });
         });
         return headings;
-    },
+    }
 
     /**
      * Extraire les paragraphes
@@ -140,7 +180,7 @@ const scrapingService = {
             }
         });
         return paragraphs;
-    },
+    }
 
     /**
      * Extraire les liens
@@ -173,7 +213,7 @@ const scrapingService = {
         });
 
         return links;
-    },
+    }
 
     /**
      * Extraire les images
@@ -206,7 +246,7 @@ const scrapingService = {
         });
 
         return images;
-    },
+    }
 
     /**
      * Compter les mots dans les paragraphes
@@ -216,6 +256,6 @@ const scrapingService = {
             return count + p.split(/\s+/).length;
         }, 0);
     }
-};
+}
 
-module.exports = scrapingService;
+module.exports = new ScrapingService();
