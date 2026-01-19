@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebScraper Pro - Extract Data Effortlessly</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #d4a574;
+            --secondary-color: #e8d5c4;
+            --accent-color: #f5e6d3;
+            --dark-bg: #3e3e3e;
+            --light-bg: #faf8f5;
+            --text-dark: #3e3e3e;
+            --text-light: #6b6b6b;
+            --gradient-1: linear-gradient(135deg, #d4a574 0%, #e8d5c4 100%);
+            --gradient-2: linear-gradient(135deg, #f5e6d3 0%, #faf8f5 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+        }
+
+        .navbar {
+            background: rgba(212, 165, 116, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: var(--gradient-1);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-link {
+            color: #fff !important;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--dark-bg) !important;
+        }
+
+        .hero {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #faf8f5 0%, #f5f2ed 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 120px 0 80px;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(212, 165, 116, 0.2) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(232, 213, 196, 0.2) 0%, transparent 50%);
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--text-dark) 0%, var(--primary-color) 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+
+        .hero-icon {
+            font-size: 180px;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-30px); }
+        }
+
+        .btn-primary {
+            background: var(--gradient-1);
+            border: none;
+            padding: 14px 40px;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 165, 116, 0.4);
+            color: white;
+        }
+
+        .features {
+            padding: 100px 0;
+            background: white;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(212, 165, 116, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: var(--gradient-1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 1.8rem;
+            color: white;
+        }
+
+        .feature-card h4 {
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .feature-card p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .cta {
+            padding: 80px 0;
+            background: var(--gradient-1);
+            color: white;
+            text-align: center;
+        }
+
+        .cta h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .cta .btn-light {
+            color: var(--dark-bg);
+            background: white;
+            padding: 14px 40px;
+            font-weight: 600;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .cta .btn-light:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
+        }
+
+        footer {
+            background: var(--light-bg);
+            color: var(--text-dark);
+            padding: 80px 0 0;
+            border-top: 1px solid var(--accent-color);
+        }
+
+        footer h5, footer h6 {
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .footer-brand p {
+            color: var(--text-light);
+            line-height: 1.6;
+            max-width: 300px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .social-link:hover {
+            background: var(--secondary-color);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-color);
+            transform: translateX(3px);
+        }
+
+        .footer-bottom-links {
+            display: flex;
+            gap: 20px;
+            justify-content: flex-end;
+        }
+
+        .footer-bottom-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-bottom-links a:hover {
+            color: var(--primary-color);
+        }
+
+        footer .border-top {
+            border-color: var(--accent-color) !important;
+        }
+
+        /* Pricing Section Styles */
+        .pricing {
+            padding: 100px 0;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        .pricing-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pricing-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-1);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .pricing-card:hover::before {
+            opacity: 1;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(212, 165, 116, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(212, 165, 116, 0.25);
+        }
+
+        .pricing-card.featured::before {
+            opacity: 1;
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: 20px;
+            right: -30px;
+            background: var(--gradient-1);
+            color: white;
+            padding: 8px 40px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transform: rotate(45deg);
+            box-shadow: 0 2px 8px rgba(212, 165, 116, 0.3);
+        }
+
+        .pricing-header h3 {
+            color: var(--text-dark);
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+        .price {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .currency {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .amount {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+
+        .period {
+            font-size: 1rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .description {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+        }
+
+        .pricing-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 30px 0;
+            text-align: left;
+            flex-grow: 1;
+        }
+
+        .pricing-features li {
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+        }
+
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+
+        .pricing-features i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .pricing-features .fa-check {
+            color: #16a34a;
+        }
+
+        .pricing-features .fa-times {
+            color: #dc2626;
+        }
+
+        .pricing-card .btn {
+            padding: 14px 30px;
+            font-weight: 600;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-card .btn-outline-primary:hover {
+            background: var(--gradient-1);
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(212, 165, 116, 0.3);
+        }
+
+        .pricing-card .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .hero-icon {
+                font-size: 120px;
+            }
+
+            .cta h2 {
+                font-size: 1.8rem;
+            }
+
+            .pricing-card.featured {
+                transform: scale(1);
+            }
+
+            .amount {
+                font-size: 2.5rem;
+            }
+
+            .pricing-card {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Enhanced Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-spider"></i> WebScraper Pro
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#pricing">Pricing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://github.com/NezarEa/web-scraper" target="_blank">Documentation</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://github.com/NezarEa/web-scraper/issues" target="_blank">Support</a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <a class="btn btn-primary" href="/tool.html">Try Now</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 hero-content">
+                        <h1>Extract Web Data in Seconds</h1>
+                        <p>Powerful web scraping tool that helps you collect data from any website. No coding required. Just paste a URL and get instant results.</p>
+                        <div class="d-flex flex-wrap gap-3">
+                            <a href="/tool.html" class="btn btn-primary btn-lg">
+                                <i class="fas fa-rocket me-2"></i>Open the Tool
+                            </a>
+                            <a href="#features" class="btn btn-outline-light btn-lg">
+                                <i class="fas fa-info-circle me-2"></i>Learn More
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 text-center">
+                        <i class="fas fa-spider hero-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features" id="features">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="display-5 fw-bold mb-3">Why Use Our Tool?</h2>
+                    <p class="lead text-muted">Everything you need to scrape web data efficiently</p>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <h4>Lightning Fast</h4>
+                            <p>Scrape web pages instantly with our optimized and reliable engine.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h4>Safe & Secure</h4>
+                            <p>Your data is protected with enterprise-grade security measures.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <h4>Easy to Use</h4>
+                            <p>Simple interface - no technical knowledge required to get started.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <h4>Structured Data</h4>
+                            <p>Extract and organize data in a clean, structured format.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-sync"></i>
+                            </div>
+                            <h4>Smart Caching</h4>
+                            <p>Efficient caching system to store and reuse your previous scrapes.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <h4>Advanced Parsing</h4>
+                            <p>Automatically detect and extract headings, links, images, and metadata.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section class="pricing" id="pricing">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="display-5 fw-bold mb-3">Choose Your Plan</h2>
+                    <p class="lead text-muted">Select the perfect plan for your web scraping needs</p>
+                </div>
+                <div class="row g-4 align-items-center">
+                    <!-- Free Plan -->
+                    <div class="col-lg-4">
+                        <div class="pricing-card">
+                            <div class="pricing-header">
+                                <h3>Free</h3>
+                                <div class="price">
+                                    <span class="currency">$</span>
+                                    <span class="amount">0</span>
+                                    <span class="period">/month</span>
+                                </div>
+                                <p class="description">Perfect for getting started</p>
+                            </div>
+                            <ul class="pricing-features">
+                                <li><i class="fas fa-check"></i> Basic web scraping</li>
+                                <li><i class="fas fa-check"></i> Up to 100 requests/month</li>
+                                <li><i class="fas fa-check"></i> Standard support</li>
+                                <li><i class="fas fa-check"></i> Basic data export</li>
+                                <li><i class="fas fa-times"></i> API access</li>
+                                <li><i class="fas fa-times"></i> Advanced features</li>
+                            </ul>
+                            <button class="btn btn-outline-primary w-100">Start Free</button>
+                        </div>
+                    </div>
+                    
+                    <!-- JSON Plan -->
+                    <div class="col-lg-4">
+                        <div class="pricing-card featured">
+                            <div class="pricing-badge">Coming Soon</div>
+                            <div class="pricing-header">
+                                <h3>JSON API</h3>
+                                <div class="price">
+                                    <span class="currency">$</span>
+                                    <span class="amount">19</span>
+                                    <span class="period">/month</span>
+                                </div>
+                                <p class="description">For developers and power users</p>
+                            </div>
+                            <ul class="pricing-features">
+                                <li><i class="fas fa-check"></i> Everything in Free</li>
+                                <li><i class="fas fa-check"></i> Unlimited requests</li>
+                                <li><i class="fas fa-check"></i> JSON API access</li>
+                                <li><i class="fas fa-check"></i> Advanced data parsing</li>
+                                <li><i class="fas fa-check"></i> Priority support</li>
+                                <li><i class="fas fa-check"></i> Custom integrations</li>
+                            </ul>
+                            <button class="btn btn-primary w-100" disabled>Coming Soon</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Extension Plan -->
+                    <div class="col-lg-4">
+                        <div class="pricing-card">
+                            <div class="pricing-badge">Coming Soon</div>
+                            <div class="pricing-header">
+                                <h3>Browser Extension</h3>
+                                <div class="price">
+                                    <span class="currency">$</span>
+                                    <span class="amount">9</span>
+                                    <span class="period">/month</span>
+                                </div>
+                                <p class="description">Scrape directly from your browser</p>
+                            </div>
+                            <ul class="pricing-features">
+                                <li><i class="fas fa-check"></i> Everything in Free</li>
+                                <li><i class="fas fa-check"></i> Browser extension</li>
+                                <li><i class="fas fa-check"></i> One-click scraping</li>
+                                <li><i class="fas fa-check"></i> Visual data selection</li>
+                                <li><i class="fas fa-check"></i> Real-time results</li>
+                                <li><i class="fas fa-check"></i> Chrome & Firefox support</li>
+                            </ul>
+                            <button class="btn btn-outline-primary w-100" disabled>Coming Soon</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta">
+            <div class="container">
+                <h2>Ready to Extract Data?</h2>
+                <p>Start scraping web data in seconds with our powerful and easy-to-use tool</p>
+                <a href="/tool.html" class="btn btn-light btn-lg">
+                    <i class="fas fa-play me-2"></i>Open the Tool Now
+                </a>
+            </div>
+        </section>
+
+        <!-- Enhanced Footer -->
+        <footer>
+            <div class="container">
+                <div class="row mb-5">
+                    <div class="col-lg-4 mb-4">
+                        <div class="footer-brand">
+                            <h5 class="mb-3"><i class="fas fa-spider"></i> WebScraper Pro</h5>
+                            <p class="mb-3">The most powerful and easy-to-use web scraping tool. Extract data from any website with just a few clicks.</p>
+                            <div class="social-links">
+                                <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                                <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                                <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                                <a href="#" class="social-link"><i class="fab fa-discord"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-6 mb-4">
+                        <h6 class="mb-3">Product</h6>
+                        <ul class="footer-links">
+                            <li><a href="/tool.html">Web Scraper Tool</a></li>
+                            <li><a href="#features">Features</a></li>
+                            <li><a href="#pricing">Pricing</a></li>
+                            <li><a href="#api">API Access</a></li>
+                            <li><a href="#changelog">Changelog</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-2 col-md-6 mb-4">
+                        <h6 class="mb-3">Resources</h6>
+                        <ul class="footer-links">
+                            <li><a href="#docs">Documentation</a></li>
+                            <li><a href="#tutorials">Tutorials</a></li>
+                            <li><a href="#blog">Blog</a></li>
+                            <li><a href="#examples">Examples</a></li>
+                            <li><a href="#support">Help Center</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-2 col-md-6 mb-4">
+                        <h6 class="mb-3">Company</h6>
+                        <ul class="footer-links">
+                            <li><a href="#about">About Us</a></li>
+                            <li><a href="#careers">Careers</a></li>
+                            <li><a href="#contact">Contact</a></li>
+                            <li><a href="#privacy">Privacy Policy</a></li>
+                            <li><a href="#terms">Terms of Service</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-2 col-md-6 mb-4">
+                        <h6 class="mb-3">Community</h6>
+                        <ul class="footer-links">
+                            <li><a href="#forum">Forum</a></li>
+                            <li><a href="#discord">Discord</a></li>
+                            <li><a href="#github">GitHub</a></li>
+                            <li><a href="#stackoverflow">Stack Overflow</a></li>
+                            <li><a href="#newsletter">Newsletter</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="border-top pt-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <p class="mb-0 text-muted">&copy; 2025 WebScraper Pro. All rights reserved.</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <div class="footer-bottom-links">
+                                <a href="#privacy">Privacy</a>
+                                <a href="#terms">Terms</a>
+                                <a href="#cookies">Cookies</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    const href = this.getAttribute('href');
+                    if (href !== '#') {
+                        e.preventDefault();
+                        const element = document.querySelector(href);
+                        if (element) {
+                            element.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
